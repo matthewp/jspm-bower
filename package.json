@@ -2,7 +2,7 @@
   "name": "jspm-bower",
   "version": "0.0.1",
   "description": "Bower endpoint for jspm",
-  "main": "index.js",
+  "main": "bower.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
