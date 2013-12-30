@@ -4,7 +4,7 @@ This is a bower endpoint for jspm.
 
 To install a package just reference it by the package name, for example:
 
-```javascript
+```shell
 jspm install bower:jquery@1.9.1
 ```
 
