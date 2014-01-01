@@ -4,6 +4,9 @@ var path = require('path');
 var rimraf = require('rimraf');
 var bower = require('bower');
 
+var has = Object.prototype.hasOwnProperty;
+var exactVersionRegEx = /^(\d+)(\.\d+)(\.\d+)?$/;
+
 /*
  * Clear out and prepare a directory for files to be copied in.
  */
@@ -17,6 +20,45 @@ var prepareDir = function(dir, callback, errback) {
       return errback(err);
     mkdirp(dir, callback);
   });
+};
+
+var getPkg = function(outDir, possibles){
+  if(!possibles) {
+    // Support the legacy component.json
+    possibles = [ 'bower.json', 'component.json' ];
+  }
+  var filename = possibles.shift();
+
+  var pkgfile = path.resolve(outDir, filename);
+  try {
+    var data = fs.readFileSync(pkgfile, 'utf8');
+    return JSON.parse(data);
+  } catch(err) {
+    if(possibles.length) {
+      return getPkg(outDir, possibles);
+    }
+    return {};
+  }
+};
+
+var getDeps = function(pkg){
+  var deps = {};
+  if(pkg.dependencies) {
+    for (var name in pkg.dependencies) {
+      if(has.call(pkg.dependencies, name)) {
+        var v = pkg.dependencies[name], version;
+        if(v.substr(0, 1) == '~') {
+          version = v.substr(1).split('.').splice(0, 2).join('.');
+        } else if(v.match(exactVersionRegEx)) {
+          version = v;
+        } else {
+          version = 'master';
+        }
+        deps[name] = 'bower:' + name + '@' + version;
+      }
+    }
+  }
+  return deps;
 };
 
 module.exports = BowerLocation;
@@ -54,13 +96,13 @@ BowerLocation.prototype = {
             fs.rename(tmpDir, outDir, function(err){
               if(err) return errback(err);
 
-              var pkgfile = path.resolve(outDir, 'package.json');
-              try {
-                var data = fs.readFileSync(pkgfile, 'utf8');
-                callback(JSON.parse(data));
-              } catch(err) {
-                callback({});
-              }
+              var p = getPkg(outDir);
+
+              callback({
+                main: Array.isArray(p.main) ? p.main[0] : p.main,
+                version: p.version,
+                map: getDeps(p)
+              });
             });
           }, errback);
         });
