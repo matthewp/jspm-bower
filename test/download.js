@@ -46,4 +46,19 @@ describe('download', function(){
       });
     });
   });
+
+  it('Returns a package with dependencies', function(done){
+    var expected = {
+      'jquery': 'bower:jquery@master'
+    };
+    bower.download('bootstrap', '3.0.3', '3.0.3', dir, function(pkg){
+      var deps = pkg.map;
+
+      assert.equal(pkg.main, './dist/js/bootstrap.js');
+      assert.notEqual(deps, undefined);
+      assert.equal(Object.keys(deps).length, 1);
+      assert.deepEqual(deps, expected);
+      done();
+    });
+  });
 });
