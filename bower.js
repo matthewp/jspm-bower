@@ -41,26 +41,6 @@ var getPkg = function(outDir, possibles){
   }
 };
 
-var getDeps = function(pkg){
-  var deps = {};
-  if(pkg.dependencies) {
-    for (var name in pkg.dependencies) {
-      if(has.call(pkg.dependencies, name)) {
-        var v = pkg.dependencies[name], version;
-        if(v.substr(0, 1) == '~') {
-          version = v.substr(1).split('.').splice(0, 2).join('.');
-        } else if(v.match(exactVersionRegEx)) {
-          version = v;
-        } else {
-          version = 'master';
-        }
-        deps[name] = 'bower:' + name + '@' + version;
-      }
-    }
-  }
-  return deps;
-};
-
 module.exports = BowerLocation;
 
 function BowerLocation(options) {
@@ -97,12 +77,10 @@ BowerLocation.prototype = {
               if(err) return errback(err);
 
               var p = getPkg(outDir);
+              
+              p.registry = 'bower';
 
-              callback({
-                main: Array.isArray(p.main) ? p.main[0] : p.main,
-                version: p.version,
-                map: getDeps(p)
-              });
+              callback(p);
             });
           }, errback);
         });
