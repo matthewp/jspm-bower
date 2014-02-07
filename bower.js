@@ -77,6 +77,7 @@ BowerLocation.prototype = {
               if(err) return errback(err);
 
               var p = getPkg(outDir);
+              p.main = Array.isArray(p.main) ? p.main[0] : p.main;
               
               p.registry = 'bower';
 
